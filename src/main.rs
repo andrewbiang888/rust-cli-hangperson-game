@@ -38,23 +38,32 @@ async fn main() -> Result<(), Error> {
     }
     guessed_copy = word_blanks;
     println!("Your word is {} characters long. it is: {}", new_word.len(), new_word);
-    while &guess != "^C" {
+    loop {
         io::stdin().read_line(&mut guess).expect("Failed to read line");
-        if new_word.contains(&guess) {
-            let guessed_char_index = new_word.find(&guess).unwrap();
-            word_blanks = String::new();
-            for (i, _c) in new_word.chars().enumerate() {
-                if i == guessed_char_index {
-                    word_blanks.push_str(&format!("{} ", &guess).to_string());
-                } else {
-                    word_blanks.push_str("_ ");
+        while &guess != "^C" {
+            if new_word.contains(&guess) {
+                let guessed_char_index = new_word.find(&guess).unwrap();
+                word_blanks = String::new();
+                for (i, _c) in new_word.chars().enumerate() {
+                    if i == guessed_char_index {
+                        word_blanks.push_str(&format!("{} ", &guess).to_string());
+                    } else {
+                        word_blanks.push_str("_ ");
+                    }
                 }
+                guessed_copy = word_blanks;
+                println!("Hell yea! You got one. What's your next guess: {}", guessed_copy);
+            } else {
+                break;
             }
-            guessed_copy = word_blanks;
-            println!("Hell yea! You got one. What's your next guess: {}", guessed_copy);
+            
+        }  
+        if guess == "^C"{
+            break;
         }
-        
+
     }
+
     println!("Ending the game . . . goodbye.");
     Ok(())
 }
