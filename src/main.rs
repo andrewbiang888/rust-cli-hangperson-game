@@ -51,19 +51,21 @@ async fn main() -> Result<(), Error> {
         if new_word.contains(guess.trim()) {
             let guessed_char_index = new_word.find(guess.trim()).unwrap();
             println!("nice, {}", guessed_char_index);
-            // word_blanks = String::new();
-            // for (i, _c) in new_word.chars().enumerate() {
-            //     if i == guessed_char_index {
-            //         word_blanks.push_str(&format!("{} ", &guess).to_string());
-            //     } else {
-            //         word_blanks.push_str("_ ");
-            //     }
-            // }
-            // guessed_copy = word_blanks;
-            // println!(
-            //     "Hell yea! You got one. What's your next guess: {}",
-            //     guessed_copy
-            // );
+            word_blanks = String::from(guessed_copy);
+            for (i, c) in new_word.chars().enumerate() {
+                println!("working? {}, {}", i, c);
+                
+                // if i == guessed_char_index {
+                //     word_blanks.push_str(&format!("{} ", guess.trim()).to_string());
+                // } else {
+                //     word_blanks.push_str("_ ");
+                // }
+            }
+            guessed_copy = word_blanks;
+            println!(
+                "Hell yea! You got one. What's your next guess: {}",
+                guessed_copy
+            );
         };
     }
 
