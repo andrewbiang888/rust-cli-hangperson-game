@@ -47,26 +47,61 @@ async fn main() -> Result<(), Error> {
         io::stdin()
             .read_line(&mut guess)
             .expect("Failed to read line");
-        println!("guessin {}, {}", guess.trim(), new_word.contains(guess.trim()));
-        if new_word.contains(guess.trim()) {
-            let guessed_char_index = new_word.find(guess.trim()).unwrap();
-            println!("nice, {}", guessed_char_index);
-            word_blanks = String::from(guessed_copy);
-            for (i, c) in new_word.chars().enumerate() {
-                println!("working? {}, {}", i, c);
-                
-                // if i == guessed_char_index {
-                //     word_blanks.push_str(&format!("{} ", guess.trim()).to_string());
-                // } else {
-                //     word_blanks.push_str("_ ");
-                // }
+        let guess = guess.trim().to_lowercase();
+        if guess.len() == 1 {
+            let guess_as_char = &guess
+                .chars()
+                .next()
+                .expect("guess could not be interpreted properly");
+            let word_vec: Vec<char> = new_word.to_lowercase().chars().collect();
+            let guessed_vec_copy: Vec<char> = word_vec.iter().map(|_x| '_').collect();
+            if word_vec.contains(guess_as_char) {
+                println!("Nice! {} is in the word! What's your next guess?", guess);
+                let guessed_char_index: Vec<usize> = word_vec
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, x)| if x == guess_as_char { Some(i) } else { None })
+                    .collect();
+                print!("Match at index: {:?}, {:?}", guessed_char_index, word_vec);
+                let guessed_vec_copy: Vec<char> = word_vec
+                    .iter()
+                    .enumerate()
+                    .map(|(_, x)| {
+                        // println!("{}, {}, {}", x, guess_as_char, x == guess_as_char);
+                        if x == guess_as_char {
+                            x.clone()
+                        } else {
+                            '_'
+                        }
+                    })
+                    .collect();
+                // println!("{:?}", &guessed_vec_copy);
             }
-            guessed_copy = word_blanks;
-            println!(
-                "Hell yea! You got one. What's your next guess: {}",
-                guessed_copy
-            );
-        };
+        }
+        if guess.len() > 1 {
+            println!("Guess one character at a time.");
+        }
+        // word_vec.iter().map(|char| if char. )
+        // println!("guessin {}, {}", guess.trim(), new_word.contains(guess.trim()));
+        // if new_word.contains(guess.trim()) {
+        //     let guessed_char_index = new_word.find(guess.trim()).unwrap();
+        //     println!("nice, {}", guessed_char_index);
+        //     word_blanks = String::from(guessed_copy);
+        //     for (i, c) in new_word.chars().enumerate() {
+        //         println!("working? {}, {}", i, c);
+
+        //         if i == guessed_char_index {
+        //             word_blanks.push_str(&format!("{} ", guess.trim()).to_string());
+        //         } else {
+        //             word_blanks.push_str("_ ");
+        //         }
+        //     }
+        //     guessed_copy = word_blanks;
+        //     println!(
+        //         "Hell yea! You got one. What's your next guess: {}",
+        //         guessed_copy
+        //     );
+        // };
     }
 
     println!("Ending the game . . . goodbye.");
