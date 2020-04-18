@@ -1,7 +1,7 @@
-use std::io;
-use std::fs;
 use reqwest::{get, Error};
 use serde::{Deserialize, Serialize};
+use std::fs;
+use std::io;
 // use serde_json::Value;
 use structopt::StructOpt;
 
@@ -17,7 +17,7 @@ struct Cli {
     guess: Option<String>,
 }
 
-async fn get_new_word () -> Result<String, Error> {
+async fn get_new_word() -> Result<String, Error> {
     let env = fs::read_to_string(".env").expect("Something went wrong reading the file");
     let api_key: Vec<&str> = env.split("api_key=").collect();
     let api_key: String = api_key[1].to_string();
@@ -30,38 +30,41 @@ async fn get_new_word () -> Result<String, Error> {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let new_word = get_new_word().await?;
-    let mut guess = String::new();
     let mut word_blanks = String::new();
     let mut guessed_copy = String::new();
-    for _c in new_word.chars() { 
+    for _c in new_word.chars() {
         word_blanks.push_str("_ ");
     }
     guessed_copy = word_blanks;
-    println!("Your word is {} characters long. it is: {}", new_word.len(), new_word);
+    println!(
+        "Your word is {} characters long. it is: {}",
+        new_word.len(),
+        guessed_copy
+    );
+    println!("psst, it is: {}", new_word);
     loop {
-        io::stdin().read_line(&mut guess).expect("Failed to read line");
-        while &guess != "^C" {
-            if new_word.contains(&guess) {
-                let guessed_char_index = new_word.find(&guess).unwrap();
-                word_blanks = String::new();
-                for (i, _c) in new_word.chars().enumerate() {
-                    if i == guessed_char_index {
-                        word_blanks.push_str(&format!("{} ", &guess).to_string());
-                    } else {
-                        word_blanks.push_str("_ ");
-                    }
-                }
-                guessed_copy = word_blanks;
-                println!("Hell yea! You got one. What's your next guess: {}", guessed_copy);
-            } else {
-                break;
-            }
-            
-        }  
-        if guess == "^C"{
-            break;
-        }
-
+        let mut guess = String::new();
+        io::stdin()
+            .read_line(&mut guess)
+            .expect("Failed to read line");
+        println!("guessin {}, {}", guess.trim(), new_word.contains(guess.trim()));
+        if new_word.contains(guess.trim()) {
+            let guessed_char_index = new_word.find(guess.trim()).unwrap();
+            println!("nice, {}", guessed_char_index);
+            // word_blanks = String::new();
+            // for (i, _c) in new_word.chars().enumerate() {
+            //     if i == guessed_char_index {
+            //         word_blanks.push_str(&format!("{} ", &guess).to_string());
+            //     } else {
+            //         word_blanks.push_str("_ ");
+            //     }
+            // }
+            // guessed_copy = word_blanks;
+            // println!(
+            //     "Hell yea! You got one. What's your next guess: {}",
+            //     guessed_copy
+            // );
+        };
     }
 
     println!("Ending the game . . . goodbye.");
