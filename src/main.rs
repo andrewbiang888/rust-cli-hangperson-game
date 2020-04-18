@@ -30,17 +30,7 @@ async fn get_new_word() -> Result<String, Error> {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let new_word = get_new_word().await?;
-    let mut word_blanks = String::new();
-    let mut guessed_copy = String::new();
-    for _c in new_word.chars() {
-        word_blanks.push_str("_ ");
-    }
-    guessed_copy = word_blanks;
-    println!(
-        "Your word is {} characters long. it is: {}",
-        new_word.len(),
-        guessed_copy
-    );
+    println!("Your word is {} characters long.", new_word.len());
     println!("psst, it is: {}", new_word);
     loop {
         let mut guess = String::new();
@@ -57,25 +47,21 @@ async fn main() -> Result<(), Error> {
             let guessed_vec_copy: Vec<char> = word_vec.iter().map(|_x| '_').collect();
             if word_vec.contains(guess_as_char) {
                 println!("Nice! {} is in the word! What's your next guess?", guess);
-                let guessed_char_index: Vec<usize> = word_vec
+                let guessed_char_indics: Vec<usize> = word_vec
                     .iter()
                     .enumerate()
                     .filter_map(|(i, x)| if x == guess_as_char { Some(i) } else { None })
+                    // .clone()
                     .collect();
-                print!("Match at index: {:?}, {:?}", guessed_char_index, word_vec);
+                if guessed_char_indics.len() > 0 {
+                    print!("nice: {}", guessed_char_indics.len());
+                }
+                print!("Match at index: {:?}, {:?}", guessed_char_indics, word_vec);
                 let guessed_vec_copy: Vec<char> = word_vec
                     .iter()
                     .enumerate()
-                    .map(|(_, x)| {
-                        // println!("{}, {}, {}", x, guess_as_char, x == guess_as_char);
-                        if x == guess_as_char {
-                            x.clone()
-                        } else {
-                            '_'
-                        }
-                    })
+                    .map(|(_, x)| if x == guess_as_char { x.clone() } else { '_' })
                     .collect();
-                // println!("{:?}", &guessed_vec_copy);
             }
         }
         if guess.len() > 1 {
