@@ -30,8 +30,11 @@ async fn get_new_word() -> Result<String, Error> {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let new_word = get_new_word().await?;
+    let word_vec: Vec<char> = new_word.to_lowercase().chars().collect();
+    let mut guessed_vec_copy: Vec<char> = word_vec.iter().map(|_x| '_').collect();
     println!("Your word is {} characters long.", new_word.len());
     println!("psst, it is: {}", new_word);
+    let mut guess_count = 5;
     loop {
         let mut guess = String::new();
         io::stdin()
@@ -43,51 +46,50 @@ async fn main() -> Result<(), Error> {
                 .chars()
                 .next()
                 .expect("guess could not be interpreted properly");
-            let word_vec: Vec<char> = new_word.to_lowercase().chars().collect();
-            let guessed_vec_copy: Vec<char> = word_vec.iter().map(|_x| '_').collect();
+
             if word_vec.contains(guess_as_char) {
-                println!("Nice! {} is in the word! What's your next guess?", guess);
                 let guessed_char_indics: Vec<usize> = word_vec
                     .iter()
                     .enumerate()
-                    .filter_map(|(i, x)| if x == guess_as_char { Some(i) } else { None })
-                    // .clone()
+                    .filter_map(|(i, &x)| if x == *guess_as_char { Some(i) } else { None })
                     .collect();
+                println!(
+                    "Nice! {} is in the word! What's your next guess? {:?}",
+                    guess, guessed_char_indics
+                );
+
                 if guessed_char_indics.len() > 0 {
-                    print!("nice: {}", guessed_char_indics.len());
+                    println!("KAZAM: {}", guessed_char_indics.len());
+                    guessed_vec_copy = word_vec
+                        .iter()
+                        .enumerate()
+                        .map(|(i, &x)| {
+                            println!("hmmm {} + {}", x, guessed_vec_copy[i]);
+                            if x == *guess_as_char {
+                                x
+                            } else if x == guessed_vec_copy[i] {
+                                guessed_vec_copy[i]
+                            } else {
+                                '_'
+                            }
+                        })
+                        .collect();
+                    println!("{:?}", guessed_vec_copy);
+                } else {
+                    println!("whoops, could not map {} to a hit.", guess);
                 }
-                print!("Match at index: {:?}, {:?}", guessed_char_indics, word_vec);
-                let guessed_vec_copy: Vec<char> = word_vec
-                    .iter()
-                    .enumerate()
-                    .map(|(_, x)| if x == guess_as_char { x.clone() } else { '_' })
-                    .collect();
+            } else {
+                guess_count = guess_count - 1;
+                println!(
+                    "Nope! \"{}\" is not in the word. You have {} guesses left.",
+                    guess_as_char, guess_count
+                );
             }
         }
         if guess.len() > 1 {
             println!("Guess one character at a time.");
         }
-        // word_vec.iter().map(|char| if char. )
-        // println!("guessin {}, {}", guess.trim(), new_word.contains(guess.trim()));
-        // if new_word.contains(guess.trim()) {
-        //     let guessed_char_index = new_word.find(guess.trim()).unwrap();
-        //     println!("nice, {}", guessed_char_index);
-        //     word_blanks = String::from(guessed_copy);
-        //     for (i, c) in new_word.chars().enumerate() {
-        //         println!("working? {}, {}", i, c);
-
-        //         if i == guessed_char_index {
-        //             word_blanks.push_str(&format!("{} ", guess.trim()).to_string());
-        //         } else {
-        //             word_blanks.push_str("_ ");
-        //         }
-        //     }
-        //     guessed_copy = word_blanks;
-        //     println!(
-        //         "Hell yea! You got one. What's your next guess: {}",
-        //         guessed_copy
-        //     );
-        // };
+        println!("{:?}", guessed_vec_copy);
     }
 
     println!("Ending the game . . . goodbye.");
