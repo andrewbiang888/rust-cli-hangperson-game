@@ -35,6 +35,7 @@ async fn main() -> Result<(), Error> {
     println!("Your word is {} characters long.", new_word.len());
     println!("psst, it is: {}", new_word);
     let mut guess_count = 5;
+
     loop {
         let mut guess = String::new();
         io::stdin()
@@ -45,7 +46,7 @@ async fn main() -> Result<(), Error> {
             let guess_as_char = &guess
                 .chars()
                 .next()
-                .expect("guess could not be interpreted properly");
+                .expect("The guess could not be interpreted properly.");
 
             if word_vec.contains(guess_as_char) {
                 let guessed_char_indics: Vec<usize> = word_vec
@@ -53,28 +54,28 @@ async fn main() -> Result<(), Error> {
                     .enumerate()
                     .filter_map(|(i, &x)| if x == *guess_as_char { Some(i) } else { None })
                     .collect();
-                println!(
-                    "Nice! {} is in the word! What's your next guess? {:?}",
-                    guess, guessed_char_indics
-                );
 
                 if guessed_char_indics.len() > 0 {
-                    println!("KAZAM: {}", guessed_char_indics.len());
+                    println!("KAZAM! {} correct match!", guessed_char_indics.len());
+                    let mut is_complete = 1;
                     guessed_vec_copy = word_vec
                         .iter()
                         .enumerate()
                         .map(|(i, &x)| {
-                            println!("hmmm {} + {}", x, guessed_vec_copy[i]);
                             if x == *guess_as_char {
                                 x
                             } else if x == guessed_vec_copy[i] {
                                 guessed_vec_copy[i]
                             } else {
+                                is_complete = 0;
                                 '_'
                             }
                         })
                         .collect();
-                    println!("{:?}", guessed_vec_copy);
+                    if is_complete == 1 {
+                        println!("Congrats! You finished the word! Now nobody needs to die for some reason 🤷");
+                        break;
+                    }
                 } else {
                     println!("whoops, could not map {} to a hit.", guess);
                 }
@@ -89,7 +90,12 @@ async fn main() -> Result<(), Error> {
         if guess.len() > 1 {
             println!("Guess one character at a time.");
         }
-        println!("{:?}", guessed_vec_copy);
+        // let guess_output: String = guessed_vec_copy.clone().into_iter().collect::<String>();
+        let guess_output: String = guessed_vec_copy
+            .iter()
+            .map(|x| format!("{} ", x.to_string()))
+            .collect();
+        println!("{:?}", guess_output);
     }
 
     println!("Ending the game . . . goodbye.");
