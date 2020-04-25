@@ -1,3 +1,4 @@
+mod hcanvas;
 use reqwest::{get, Error};
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -22,6 +23,8 @@ struct GameState {
     word_vec: Vec<char>,
     guessed_vec_copy: Vec<char>,
     guess_count: u32,
+    misses: usize,
+    canvas: hcanvas::HangmanCanvas,
 }
 
 impl GameState {
@@ -29,12 +32,15 @@ impl GameState {
         let new_word = Self::get_new_word().await?;
         let word_vec: Vec<char> = new_word.to_lowercase().chars().collect();
         let guessed_vec_copy: Vec<char> = word_vec.iter().map(|_x| '_').collect();
+        let canvas = hcanvas::HangmanCanvas::new().expect("Could not init canvas correctly");
         println!("Your word is {} characters long.", new_word.len());
         println!("psst, it is: {}", new_word);
         let gamestate = GameState {
             word_vec,
             guessed_vec_copy,
-            guess_count: 5,
+            guess_count: 6,
+            misses: 0,
+            canvas,
         };
         Ok(gamestate)
     }
@@ -100,11 +106,21 @@ impl GameState {
                 }
             } else {
                 self.guess_count = self.guess_count - 1;
-                println!(
-                    "Nope! \"{}\" is not in the word. You have {} guesses left.",
-                    guess_as_char, self.guess_count
-                );
-                return false;
+                self.misses = self.misses + 1;
+                self.display_status();
+                if self.guess_count == 0 {
+                    println!(
+                        "Nope! \"{}\" is not in the word. You used all your guesses. Game Over.",
+                        guess_as_char
+                    );
+                    return true;
+                } else {
+                    println!(
+                        "Nope! \"{}\" is not in the word. You have {} guesses left.",
+                        guess_as_char, self.guess_count
+                    );
+                    return false;
+                }
             }
         }
         if guess.len() > 1 {
@@ -113,14 +129,20 @@ impl GameState {
         if guess.len() == 0 {
             println!("Guess something ya ding dong.");
         }
-        // let guess_output: String = guessed_vec_copy.clone().into_iter().collect::<String>();
+        self.display_status();
+        return false;
+    }
+
+    fn display_status(&self) {
+        // print hang person graphic
+        self.canvas.print_step(self.misses);
+
         let guess_output: String = self
             .guessed_vec_copy
             .iter()
             .map(|x| format!("{} ", x.to_string()))
             .collect();
         println!("{:?}", guess_output);
-        return false;
     }
 }
 
